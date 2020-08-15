@@ -1,0 +1,51 @@
+name: Auto ACME
+
+on:
+  schedule:
+    - cron: "0 2 1 * *"
+  watch:
+    types: [started]
+
+env:
+    ACME: /home/runner/.acme.sh/acme.sh
+    DNSAPI: ${{ secrets.DNSAPI }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install & Configure ACME.SH
+      run: |
+        curl  https://get.acme.sh | sh
+        echo "$DNSAPI" >> /home/runner/.acme.sh/account.conf
+    - name: Issue & Deploy Certificates
+      run: |
+        mkdir -p ./ssl
+        $ACME --issue --dns dns_dp -d chirmyram.top -d *.chirmyram.top
+        $ACME --installcert -d chirmyram.top --key-file ./ssl/chirmyram.top.key --fullchain-file ./ssl/chirmyram.top.cer
+        zip -r ssl.zip ssl
+    - name: Commit
+      run: |
+        git config --global user.email AutoupdateRobot@email.com
+        git config --global user.name AutoupdateRobot
+        git add ./ssl/
+        git commit -m "Update certificate files" -a
+    - name: Push
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Send mail
+      uses: dawidd6/action-send-mail@v2
+      with:
+        server_address: smtp.qiye.aliyun.com
+        server_port: 465
+        username: ${{ secrets.MAILUSERNAME }}
+        password: ${{ secrets.MAILPASSWORD }}
+        subject: GitHub Actions Auto ACME
+        body: Build job of ${{github.repository}} completed successfully!
+        to: chirmyram@qq.com
+        from: GitHub Actions Auto ACME
+        attachments: ./ssl.zip
