@@ -46,6 +46,6 @@ jobs:
         password: ${{ secrets.MAILPASSWORD }}
         subject: GitHub Actions Auto ACME
         body: Build job of ${{github.repository}} completed successfully!
-        to: chirmyram@qq.com
+        to: office@chirmyram.top
         from: GitHub Actions Auto ACME
         attachments: ./ssl.zip
