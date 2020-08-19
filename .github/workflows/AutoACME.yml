@@ -24,7 +24,7 @@ jobs:
     - name: Issue & Deploy Certificates
       run: |
         mkdir -p ./ssl
-        $ACME --issue --dns dns_dp -d chirmyram.top -d *chirmyram.top
+        $ACME --issue --dns dns_dp -d chirmyram.top -d *.chirmyram.top
         $ACME --installcert -d chirmyram.top --key-file ./ssl/chirmyram.top.key --fullchain-file ./ssl/chirmyram.top.cer
         zip -r ssl.zip ssl
     - name: Commit
