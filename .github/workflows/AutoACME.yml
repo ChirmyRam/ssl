@@ -27,25 +27,3 @@ jobs:
         $ACME --issue --dns dns_dp -d chirmyram.top -d *.chirmyram.top
         $ACME --installcert -d chirmyram.top --key-file ./ssl/chirmyram.top.key --fullchain-file ./ssl/chirmyram.top.cer
         zip -r ssl.zip ssl
-    - name: Commit
-      run: |
-        git config --global user.email AutoupdateRobot@email.com
-        git config --global user.name AutoupdateRobot
-        git add ./ssl/
-        git commit -m "Update certificate files" -a
-    - name: Push
-      uses: ad-m/github-push-action@main
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Send mail
-      uses: dawidd6/action-send-mail@v2
-      with:
-        server_address: smtp.qq.com
-        server_port: 465
-        username: ${{ secrets.MAILUSERNAME }}
-        password: ${{ secrets.MAILPASSWORD }}
-        subject: GitHub Actions Auto ACME
-        body: Build job of ${{github.repository}} completed successfully!
-        to: ${{ secrets.MAILUSERNAME }}
-        from: GitHub Actions Auto ACME
-        attachments: ./ssl.zip
